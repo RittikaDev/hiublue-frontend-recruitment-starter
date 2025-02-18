@@ -16,7 +16,7 @@ import {
 	Pagination,
 } from "@mui/material";
 import { getDashboardStatResponse } from "@/services/Dashboard";
-import { IDashboardStatResponse } from "@/types";
+import { DayOfWeek, IDashboardStatResponse } from "@/types";
 
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -39,30 +39,31 @@ const Dashboard = () => {
 
 	if (!data) return <p>Loading...</p>;
 
-	// const offers = Object.keys(data.offers_sent).map((day) => ({
-	// 	day,
-	// 	count: data.offers_sent[day],
-	// }));
-	// const visits = Object.keys(data.website_visits).map((day) => ({
-	// 	day,
-	// 	desktop: data.website_visits[day].desktop,
-	// 	mobile: data.website_visits[day].mobile,
-	// }));
+	const offers = Object.keys(data.offers_sent).map((day) => ({
+		day,
+		count: data.offers_sent[day as DayOfWeek],
+	}));
 
-	// const filteredOffers = offers
-	// 	.filter((offer) => filter === "all" || offer.count === filter)
-	// 	.filter((offer) => offer.day.toLowerCase().includes(search.toLowerCase()));
+	const visits = Object.keys(data.website_visits).map((day) => ({
+		day,
+		desktop: data.website_visits[day as DayOfWeek].desktop, // Cast to DayOfWeek
+		mobile: data.website_visits[day as DayOfWeek].mobile, // Cast to DayOfWeek
+	}));
 
-	// const paginatedOffers = filteredOffers.slice(
-	// 	(page - 1) * rowsPerPage,
-	// 	page * rowsPerPage
-	// );
+	const filteredOffers = offers
+		.filter((offer) => filter === "all" || offer.count === Number(filter))
+		.filter((offer) => offer.day.toLowerCase().includes(search.toLowerCase()));
+
+	const paginatedOffers = filteredOffers.slice(
+		(page - 1) * rowsPerPage,
+		page * rowsPerPage
+	);
 
 	return (
 		<div className="p-4 max-w-7xl mx-auto">
 			<h2 className="text-3xl font-bold mt-40">Dashboard</h2>
 
-			{/* <div className="grid grid-cols-2 gap-4 mb-6">
+			<div className="grid grid-cols-2 gap-4 mb-6">
 				<ApexChart
 					options={{
 						chart: { type: "bar" },
@@ -127,8 +128,8 @@ const Dashboard = () => {
 				count={Math.ceil(filteredOffers.length / rowsPerPage)}
 				page={page}
 				onChange={(event, value) => setPage(value)}
-				className="mt-4" */}
-			{/* /> */}
+				className="mt-4"
+			/>
 		</div>
 	);
 };

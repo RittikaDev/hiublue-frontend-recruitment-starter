@@ -1,3 +1,12 @@
+export type DayOfWeek =
+	| "monday"
+	| "tuesday"
+	| "wednesday"
+	| "thursday"
+	| "friday"
+	| "saturday"
+	| "sunday";
+
 export interface IWebsiteVisits {
 	monday: { desktop: number; mobile: number };
 	tuesday: { desktop: number; mobile: number };
