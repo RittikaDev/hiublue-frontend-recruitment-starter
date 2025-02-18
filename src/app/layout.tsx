@@ -1,7 +1,6 @@
 import * as React from "react";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import CssBaseline from "@mui/material/CssBaseline";
-// import "./globals.css";
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 
 import ThemeProvider from "@/theme/index";
