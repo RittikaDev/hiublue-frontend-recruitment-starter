@@ -16,11 +16,12 @@ import {
 	Pagination,
 } from "@mui/material";
 import { getDashboardStatResponse } from "@/services/Dashboard";
+import { IDashboardStatResponse } from "@/types";
 
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const Dashboard = () => {
-	const [data, setData] = useState(null);
+	const [data, setData] = useState<IDashboardStatResponse | null>(null);
 	const [search, setSearch] = useState("");
 	const [filter, setFilter] = useState("all");
 	const [page, setPage] = useState(1);
@@ -28,7 +29,7 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const data = await getDashboardStatResponse();
+			const data: IDashboardStatResponse = await getDashboardStatResponse();
 			console.log(data);
 			setData(data);
 		};
