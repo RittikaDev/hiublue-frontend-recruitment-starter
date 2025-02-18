@@ -15,6 +15,7 @@ import {
 	MenuItem,
 	Pagination,
 } from "@mui/material";
+import { getDashboardStatResponse } from "@/services/Dashboard";
 
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -27,17 +28,11 @@ const Dashboard = () => {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			try {
-				const response = await fetch(
-					"https://dummy-1.hiublue.com/api/dashboard/stat?filter=this-week"
-				);
-				const result = await response.json();
-				console.log(result);
-				setData(result);
-			} catch (error) {
-				console.error("Error fetching data:", error);
-			}
+			const data = await getDashboardStatResponse();
+			console.log(data);
+			setData(data);
 		};
+
 		fetchData();
 	}, []);
 

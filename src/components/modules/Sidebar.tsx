@@ -18,7 +18,7 @@ const NAVIGATION: Navigation = [
 	},
 	{
 		segment: "onboarding",
-		title: "O",
+		title: "Onboarding",
 		icon: <ShoppingCartIcon />,
 	},
 ];
