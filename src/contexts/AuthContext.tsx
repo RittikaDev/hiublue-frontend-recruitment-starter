@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const login = async (email: string, password: string) => {
 		try {
 			const data = await loginUser(email, password);
+			// console.log(data);
 			setUser(data.user);
 			setToken(data.token);
 			localStorage.setItem("user", JSON.stringify(data.user));
@@ -42,26 +43,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			console.error(error);
 		}
 	};
-
-	// const login = async (email: string, password: string) => {
-	// 	try {
-	// 		const response = await fetch("https://dummy-1.hiublue.com/api/login", {
-	// 			method: "POST",
-	// 			headers: { "Content-Type": "application/json" },
-	// 			body: JSON.stringify({ email, password }),
-	// 		});
-
-	// 		if (!response.ok) throw new Error("Login failed");
-
-	// 		const data = await response.json();
-	// 		setUser(data.user);
-	// 		setToken(data.token);
-	// 		localStorage.setItem("user", JSON.stringify(data.user));
-	// 		localStorage.setItem("token", data.token);
-	// 	} catch (error) {
-	// 		console.error(error);
-	// 	}
-	// };
 
 	const logout = () => {
 		setUser(null);
