@@ -12,7 +12,8 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@/services/AuthService";
+import { getCurrentUser, logout } from "@/services/AuthService";
+import Link from "next/link";
 
 const Navbar = () => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -42,6 +43,10 @@ const Navbar = () => {
 	};
 
 	const handleLogout = async () => {
+		// console.log("Logout button clicked");
+		localStorage.removeItem("user");
+		localStorage.removeItem("token");
+		logout();
 		setIsAuthenticated(false);
 	};
 
@@ -57,7 +62,7 @@ const Navbar = () => {
 						<Typography variant="h6">Logo</Typography>
 						<div className="justify-center flex-grow hidden lg:flex">
 							<Button color="inherit">Home</Button>
-							{isAuthenticated && <Button color="inherit">Dashboard</Button>}
+							{isAuthenticated && <Link href="/dashboard">Dashboard</Link>}
 						</div>
 						<div className="hidden lg:flex">
 							{isAuthenticated ? (

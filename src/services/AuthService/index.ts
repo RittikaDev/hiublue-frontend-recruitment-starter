@@ -26,3 +26,7 @@ export const getCurrentUser = async () => {
 	const jwtToken = cookies().get("token")?.value;
 	if (jwtToken) return jwtToken;
 };
+
+export const logout = async () => {
+	(await cookies()).delete("accessToken");
+};
