@@ -15,9 +15,12 @@ import Stack from "@mui/material/Stack";
 import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+
+import { loginSchema } from "../loginValidation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const Card = styled(MuiCard)(({ theme }) => ({
 	display: "flex",
@@ -64,18 +67,23 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 export default function SignIn() {
 	const { login } = useAuth();
 	const router = useRouter();
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [error, setError] = useState("");
 
-	const handleSubmit = async (event: React.FormEvent) => {
-		event.preventDefault();
-		setError("");
+	const form = useForm({
+		resolver: zodResolver(loginSchema),
+	});
+
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = form;
+
+	const onSubmit = async (data: { email: string; password: string }) => {
 		try {
-			await login(email, password);
-			router.push("/dashboard"); // Redirect after login
+			await login(data.email, data.password);
+			router.push("/onboarding"); // Redirect after login
 		} catch (err) {
-			setError("Invalid credentials. Please try again.");
+			console.error("Login failed:", err);
 		}
 	};
 
@@ -93,7 +101,8 @@ export default function SignIn() {
 					</Typography>
 					<Box
 						component="form"
-						onSubmit={() => {}}
+						// onSubmit={handleSubmit}
+						onSubmit={handleSubmit(onSubmit)}
 						noValidate
 						sx={{
 							display: "flex",
@@ -106,7 +115,7 @@ export default function SignIn() {
 							<FormLabel htmlFor="email">Email</FormLabel>
 							<TextField
 								type="email"
-								name="email"
+								{...register("email")}
 								placeholder="your@email.com"
 								autoComplete="email"
 								autoFocus
@@ -115,12 +124,14 @@ export default function SignIn() {
 								variant="outlined"
 								size="small"
 								sx={{ mt: 1 }}
+								error={!!errors.email}
+								helperText={errors.email?.message}
 							/>
 						</FormControl>
 						<FormControl>
 							<FormLabel htmlFor="password">Password</FormLabel>
 							<TextField
-								name="password"
+								{...register("password")}
 								placeholder="••••••"
 								type="password"
 								id="password"
@@ -130,6 +141,8 @@ export default function SignIn() {
 								variant="outlined"
 								size="small"
 								sx={{ mt: 1 }}
+								error={!!errors.password}
+								helperText={errors.password?.message}
 							/>
 						</FormControl>
 						<FormControlLabel
@@ -142,7 +155,7 @@ export default function SignIn() {
 							variant="contained"
 							onClick={() => {}}
 						>
-							Sign in
+							{isSubmitting ? "Signing in..." : "Sign in"}
 						</Button>
 						<Link
 							component="button"
