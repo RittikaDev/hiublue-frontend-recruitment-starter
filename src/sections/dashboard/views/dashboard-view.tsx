@@ -19,27 +19,59 @@ import {
   Typography,
   CardContent,
   Card,
+  Chip,
+  Tabs,
+  Tab,
+  TablePagination,
 } from "@mui/material";
 import {
   getDashboardStatResponse,
   getDashboardSummary,
 } from "@/services/Dashboard";
-import { DayOfWeek, IDashboardStatResponse } from "@/types";
-import { Delete, Edit } from "@mui/icons-material";
+import { DayOfWeek, IDashboardStatResponse, IOffer, IOfferList } from "@/types";
+import { Delete, Edit, More, MoreVert } from "@mui/icons-material";
 import KeyboardDoubleArrowUpRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowUpRounded";
 import KeyboardDoubleArrowDownRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowDownRounded";
+import { getOfferList } from "@/services/Offers";
 
 const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 export default function DashboardView() {
   const [data, setData] = useState<IDashboardStatResponse | null>(null);
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+
   const [page, setPage] = useState(1);
-  const rowsPerPage = 5;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset page when rows per page changes
+  };
+
+  // const startRow = page * rowsPerPage + 1;
+  // const endRow = Math.min((page + 1) * rowsPerPage, data.length);
+
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [offerList, setOfferList] = useState<IOfferList | null>(null);
+
+  const [tabIndex, setTabIndex] = useState(0);
+
   const [error, setError] = useState<string | null>(null);
+  // const rowsPerPage = 5;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,15 +79,17 @@ export default function DashboardView() {
         setLoading(true);
 
         // Fetch both APIs in parallel
-        const [statsData, summaryData] = await Promise.all([
+        const [statsData, summaryData, offersData] = await Promise.all([
           getDashboardStatResponse(),
           getDashboardSummary(),
+          getOfferList(),
         ]);
 
         setData(statsData);
         setSummary(summaryData);
+        setOfferList(offersData);
 
-        console.log(summaryData);
+        console.log(offersData);
       } catch (err: any) {
         setError("Failed to fetch data");
         console.error(err);
@@ -123,14 +157,19 @@ export default function DashboardView() {
     });
   };
 
-  const filteredOffers = offers
-    .filter((offer) => filter === "all" || offer.count === Number(filter))
-    .filter((offer) => offer.day.toLowerCase().includes(search.toLowerCase()));
-
-  const paginatedOffers = filteredOffers.slice(
-    (page - 1) * rowsPerPage,
-    page * rowsPerPage
-  );
+  const filteredOffers = offerList?.data
+    .filter((offer) => filter === "all" || offer.status === filter)
+    .filter(
+      (offer) =>
+        // Check if the search term matches any field in the offer object (case-insensitive)
+        offer.user_name.toLowerCase().includes(search.toLowerCase()) ||
+        offer.phone.toLowerCase().includes(search.toLowerCase()) ||
+        offer.company.toLowerCase().includes(search.toLowerCase()) ||
+        offer.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
+        offer.type.toLowerCase().includes(search.toLowerCase()) ||
+        offer.status.toLowerCase().includes(search.toLowerCase())
+    )
+    .filter((offer) => typeFilter === "all" || offer.type === typeFilter);
 
   return (
     <div className="p-6 bg-gray-100">
@@ -234,6 +273,17 @@ export default function DashboardView() {
         </Card>
       </div>
 
+      {/* Table */}
+      {/* Tabs for Current Offers and Accepted Offers */}
+      <Tabs
+        value={tabIndex}
+        onChange={(event, newValue) => setTabIndex(newValue)}
+        className="mb-4"
+      >
+        <Tab label="All" />
+        <Tab label="Accepted" />
+      </Tabs>
+
       {/* Table Filters */}
       <div className="flex justify-between items-center mb-4">
         <TextField
@@ -244,13 +294,14 @@ export default function DashboardView() {
           onChange={(e) => setSearch(e.target.value)}
         />
         <Select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
           size="small"
         >
           <MenuItem value="all">All</MenuItem>
-          <MenuItem value="50">50</MenuItem>
-          <MenuItem value="100">100</MenuItem>
+          <MenuItem value="monthly">Monthly</MenuItem>
+          <MenuItem value="yearly">Yearly</MenuItem>
+          <MenuItem value="pay-as-you-go">Pay as you go</MenuItem>
         </Select>
       </div>
 
@@ -265,28 +316,44 @@ export default function DashboardView() {
               <TableCell>Job Title</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedOffers.map((offer, index) => (
-              <TableRow key={index}>
-                <TableCell>Jayrim Simon</TableCell>
-                <TableCell>385-374-4961</TableCell>
-                <TableCell>Lueilwitz & Sons</TableCell>
-                <TableCell>CEO</TableCell>
-                <TableCell>Monthly</TableCell>
+            {(tabIndex === 0
+              ? filteredOffers
+              : filteredOffers?.filter((offer) => offer.status === "accepted")
+            )?.map((offer: IOffer) => (
+              <TableRow key={offer.id}>
+                <TableCell>{offer.user_name}</TableCell>
+                <TableCell>{offer.phone}</TableCell>
+                <TableCell>{offer.company}</TableCell>
+                <TableCell>{offer.jobTitle}</TableCell>
+                <TableCell>{offer.type}</TableCell>
                 <TableCell>
-                  <Badge color={offer.count > 50 ? "success" : "error"}>
-                    {offer.count > 50 ? "Accepted" : "Rejected"}
-                  </Badge>
+                  <Chip
+                    color={
+                      offer.status === "accepted"
+                        ? "success"
+                        : offer.status === "rejected"
+                          ? "warning"
+                          : "error"
+                    }
+                    label={
+                      offer.status === "accepted"
+                        ? "Accepted"
+                        : offer.status === "rejected"
+                          ? "Pending"
+                          : "Rejected"
+                    }
+                  />
                 </TableCell>
                 <TableCell>
                   <IconButton size="small">
                     <Edit />
                   </IconButton>
                   <IconButton size="small">
-                    <Delete />
+                    <MoreVert />
                   </IconButton>
                 </TableCell>
               </TableRow>
@@ -296,12 +363,16 @@ export default function DashboardView() {
       </TableContainer>
 
       {/* Pagination */}
-      <Pagination
-        count={Math.ceil(filteredOffers.length / rowsPerPage)}
-        page={page}
-        onChange={(event, value) => setPage(value)}
-        className="mt-4"
-      />
+      <div className="flex justify-end mt-4">
+        <TablePagination
+          component="div"
+          count={filteredOffers?.length ?? 0} // The total number of filtered offers
+          page={page - 1}
+          onPageChange={handleChangePage}
+          rowsPerPage={rowsPerPage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </div>
     </div>
   );
 }
