@@ -12,8 +12,9 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, logout } from "@/services/AuthService";
+// import { getCurrentUser, logout } from "@/services/AuthService";
 import Link from "next/link";
+import { logout } from "@/services/AuthService";
 
 const Navbar = () => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -23,8 +24,9 @@ const Navbar = () => {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const token = getCurrentUser();
-			if (await token) setIsAuthenticated(true);
+			// const token = getCurrentUser();
+			const token = localStorage.getItem("token");
+			if (token) setIsAuthenticated(true);
 			setIsClient(true);
 		};
 		fetchData();

@@ -24,21 +24,33 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs, { Dayjs } from "dayjs";
+import { createOffer, getUserList } from "@/services/Onboarding";
+
+const PLAN_TYPES = [
+	{ name: "Pay As You Go", value: "pay_as_you_go" },
+	{ name: "Monthly", value: "monthly" },
+	{ name: "Yearly", value: "yearly" },
+] as const;
+
+const ADDITIONS = [
+	{ name: "Refundable", value: "refundable" },
+	{ name: "On-Demand", value: "on_demand" },
+	{ name: "Negotiable", value: "negotiable" },
+] as const;
 
 // Define form schema using Zod
 const formSchema = z.object({
-	planType: z.enum(["pay-as-you-go", "monthly", "yearly"]),
-	additions: z.array(z.string()).optional(),
-	user: z.object({
-		id: z.string(),
-		name: z.string(),
-	}),
-	expired: z.custom<Dayjs>((val) => dayjs.isDayjs(val), {
-		message: "Invalid date",
-	}),
-	price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-		message: "Price must be a positive number",
-	}),
+	plan_type: z.enum(["pay_as_you_go", "monthly", "yearly"]),
+	additions: z
+		.array(z.enum(["refundable", "on_demand", "negotiable"]))
+		.optional(),
+	user_id: z.number().min(1, { message: "User is required" }),
+	expired: z
+		.custom<Dayjs>((val) => dayjs.isDayjs(val), {
+			message: "Invalid date",
+		})
+		.transform((val) => val.format("YYYY-MM-DD")),
+	price: z.number().min(1, { message: "Price is required" }),
 });
 
 // TypeScript type based on schema
@@ -54,11 +66,12 @@ const OnboardingOffer = () => {
 	} = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			planType: "monthly",
+			plan_type: "monthly",
 			additions: [],
-			user: { id: "", name: "" },
-			expired: dayjs(),
-			price: "",
+			user_id: 0,
+			// expired: new Date(),
+			expired: "",
+			price: 0,
 		},
 	});
 
@@ -70,9 +83,11 @@ const OnboardingOffer = () => {
 		if (!query) return;
 		setLoadingUsers(true);
 		try {
-			const response = await fetch(`/api/users?search=${query}`);
-			const data = await response.json();
-			setUsers(data);
+			const response = await getUserList(query);
+			const data = response;
+			// console.log(data);
+
+			setUsers(data.data);
 		} catch (error) {
 			console.error("Error fetching users:", error);
 		} finally {
@@ -81,8 +96,10 @@ const OnboardingOffer = () => {
 	};
 
 	// Handle form submission
-	const onSubmit = (data: FormValues) => {
-		console.log("Form Data Submitted:", data);
+	const onSubmit = async (data: FormValues) => {
+		// console.log("Form Data Submitted:", data);
+		const resposne = await createOffer(data);
+		console.log(resposne.message);
 	};
 
 	return (
@@ -104,26 +121,36 @@ const OnboardingOffer = () => {
 					<FormControl component="fieldset" sx={{ mb: 2 }}>
 						<p className="mt-5 font-semibold">Plan Type</p>
 						<Controller
-							name="planType"
+							name="plan_type"
 							control={control}
 							render={({ field }) => (
 								<RadioGroup row {...field}>
-									<FormControlLabel
-										value="pay-as-you-go"
-										control={<Radio color="success" />}
-										label="Pay As You Go"
-									/>
-									<FormControlLabel
-										value="monthly"
-										control={<Radio color="success" />}
-										label="Monthly"
-									/>
-									<FormControlLabel
-										value="yearly"
-										control={<Radio color="success" />}
-										label="Yearly"
-									/>
+									{PLAN_TYPES.map((plan) => (
+										<FormControlLabel
+											key={plan.value}
+											value={plan.value}
+											control={<Radio color="success" />}
+											label={plan.name}
+										/>
+									))}
 								</RadioGroup>
+								// <RadioGroup row {...field}>
+								// 	<FormControlLabel
+								// 		value="pay-as-you-go"
+								// 		control={<Radio color="success" />}
+								// 		label="Pay As You Go"
+								// 	/>
+								// 	<FormControlLabel
+								// 		value="monthly"
+								// 		control={<Radio color="success" />}
+								// 		label="Monthly"
+								// 	/>
+								// 	<FormControlLabel
+								// 		value="yearly"
+								// 		control={<Radio color="success" />}
+								// 		label="Yearly"
+								// 	/>
+								// </RadioGroup>
 							)}
 						/>
 					</FormControl>
@@ -136,7 +163,31 @@ const OnboardingOffer = () => {
 							control={control}
 							render={({ field }) => (
 								<>
-									<FormControlLabel
+									<>
+										{ADDITIONS.map((addition) => (
+											<FormControlLabel
+												key={addition.value}
+												control={
+													<Checkbox
+														color="success"
+														checked={field.value?.includes(addition.value)}
+														onChange={(e) =>
+															setValue(
+																"additions",
+																e.target.checked
+																	? [...(field.value || []), addition.value]
+																	: field.value?.filter(
+																			(v) => v !== addition.value
+																		)
+															)
+														}
+													/>
+												}
+												label={addition.name}
+											/>
+										))}
+									</>
+									{/* <FormControlLabel
 										control={
 											<Checkbox
 												color="success"
@@ -157,13 +208,13 @@ const OnboardingOffer = () => {
 										control={
 											<Checkbox
 												color="success"
-												checked={field.value?.includes("on-demand")}
+												checked={field.value?.includes("on_demand")}
 												onChange={(e) =>
 													setValue(
 														"additions",
 														e.target.checked
-															? [...(field.value || []), "on-demand"]
-															: field.value?.filter((v) => v !== "on-demand")
+															? [...(field.value || []), "on_demand"]
+															: field.value?.filter((v) => v !== "on_demand")
 													)
 												}
 											/>
@@ -186,7 +237,7 @@ const OnboardingOffer = () => {
 											/>
 										}
 										label="Negotiable"
-									/>
+									/> */}
 								</>
 							)}
 						/>
@@ -195,7 +246,7 @@ const OnboardingOffer = () => {
 					{/* User Selection (Autocomplete) */}
 					<p className="mt-5 mb-2 font-semibold">User</p>
 					<Controller
-						name="user"
+						name="user_id"
 						control={control}
 						render={({ field }) => (
 							<Autocomplete
@@ -203,13 +254,15 @@ const OnboardingOffer = () => {
 								getOptionLabel={(option) => option.name}
 								loading={loadingUsers}
 								onInputChange={(_, value) => handleUserSearch(value)}
-								onChange={(_, newValue) => field.onChange(newValue)}
+								onChange={(_, newValue) => {
+									field.onChange(newValue ? newValue.id : null);
+								}}
 								renderInput={(params) => (
 									<TextField
 										{...params}
 										label="User"
-										error={!!errors.user}
-										helperText={errors.user?.message}
+										error={!!errors.user_id}
+										helperText={errors.user_id?.message}
 										sx={{ mb: 2, width: "100%" }}
 									/>
 								)}
@@ -253,9 +306,11 @@ const OnboardingOffer = () => {
 								{...field}
 								label="Price"
 								placeholder="$ Price"
+								type="number"
 								error={!!errors.price}
 								helperText={errors.price?.message}
 								sx={{ mb: 2, width: "100%" }}
+								onChange={(e) => field.onChange(Number(e.target.value))}
 							/>
 						)}
 					/>

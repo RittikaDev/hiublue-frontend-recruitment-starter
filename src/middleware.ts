@@ -6,8 +6,8 @@ const authRoutes = ["/login"];
 export const middleware = async (request: NextRequest) => {
 	const { pathname } = request.nextUrl;
 
-	const userInfo = await getCurrentUser();
-	// console.log(userInfo);
+	// const userInfo = await getCurrentUser();
+	const userInfo = request.cookies.get("token")?.value;
 
 	// IF USER IS NOT AUTHENTICATED
 	if (!userInfo) {
