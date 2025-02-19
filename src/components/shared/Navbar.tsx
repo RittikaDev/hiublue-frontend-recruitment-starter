@@ -58,40 +58,110 @@ const Navbar = () => {
 
 	return (
 		<div className="w-full">
-			<AppBar position="sticky" className="w-full">
+			<AppBar
+				position="sticky"
+				className="w-full"
+				sx={{ boxShadow: 4, backgroundColor: "#1976d2" }}
+			>
 				<div className="max-w-7xl mx-auto w-full">
 					<Toolbar className="flex justify-between items-center w-full">
-						<Typography variant="h6">Logo</Typography>
+						<Typography
+							variant="h6"
+							sx={{ fontWeight: "bold", color: "white" }}
+						>
+							Logo
+						</Typography>
+
+						{/* Desktop Menu */}
 						<div className="justify-center flex-grow hidden lg:flex">
-							<Button color="inherit">Home</Button>
-							{isAuthenticated && <Link href="/dashboard">Dashboard</Link>}
+							<Link
+								href="/"
+								style={{
+									color: "white",
+									marginInline: "16px",
+									textDecoration: "none",
+									transition: "color 0.3s",
+								}}
+								onMouseEnter={(e) =>
+									((e.target as HTMLElement).style.color = "lightblue")
+								}
+								onMouseLeave={(e) =>
+									((e.target as HTMLElement).style.color = "white")
+								}
+							>
+								Home
+							</Link>
+							{isAuthenticated && (
+								<Link
+									href="/dashboard"
+									style={{
+										color: "white",
+										marginInline: "16px",
+										textDecoration: "none",
+										transition: "color 0.3s",
+									}}
+									onMouseEnter={(e) =>
+										((e.target as HTMLElement).style.color = "lightblue")
+									}
+									onMouseLeave={(e) =>
+										((e.target as HTMLElement).style.color = "white")
+									}
+								>
+									Dashboard
+								</Link>
+							)}
 						</div>
+
+						{/* Button for login/logout */}
 						<div className="hidden lg:flex">
 							{isAuthenticated ? (
 								<Button
-									color="secondary"
 									variant="contained"
 									onClick={handleLogout}
+									sx={{
+										textTransform: "none",
+										backgroundColor: "#FFFFFF",
+										color: "#000000",
+										"&:hover": {
+											backgroundColor: "#d32f2f",
+											transform: "scale(1.05)",
+											transition: "0.3s",
+										},
+									}}
 								>
 									Logout
 								</Button>
 							) : (
 								<Button
-									color="secondary"
 									variant="contained"
 									onClick={handleLogin}
+									sx={{
+										textTransform: "none",
+										backgroundColor: "#FFFFFF",
+										color: "#000000",
+										"&:hover": {
+											backgroundColor: "#0288d1",
+											color: "#FFFFFF",
+											transform: "scale(1.05)",
+											transition: "0.3s",
+										},
+									}}
 								>
 									Login
 								</Button>
 							)}
 						</div>
-						{/* MOBILE MENU */}
+
+						{/* Mobile Menu */}
 						<div className="md:hidden">
 							<IconButton
 								edge="start"
 								color="inherit"
 								aria-label="menu"
 								onClick={handleMenuClick}
+								sx={{
+									"&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+								}}
 							>
 								<MenuIcon />
 							</IconButton>
@@ -100,6 +170,7 @@ const Navbar = () => {
 								anchorEl={anchorEl}
 								open={Boolean(anchorEl)}
 								onClose={handleMenuClose}
+								sx={{ "& .MuiMenuItem-root": { padding: "12px 16px" } }}
 							>
 								<MenuItem onClick={handleMenuClose}>Home</MenuItem>
 								<MenuItem onClick={handleMenuClose}>About</MenuItem>
@@ -109,6 +180,14 @@ const Navbar = () => {
 										color="secondary"
 										variant="contained"
 										onClick={handleLogout}
+										sx={{
+											textTransform: "none",
+											"&:hover": {
+												backgroundColor: "#d32f2f",
+												transform: "scale(1.05)",
+												transition: "0.3s",
+											},
+										}}
 									>
 										Logout
 									</Button>
@@ -117,6 +196,14 @@ const Navbar = () => {
 										color="secondary"
 										variant="contained"
 										onClick={handleLogin}
+										sx={{
+											textTransform: "none",
+											"&:hover": {
+												backgroundColor: "#0288d1",
+												transform: "scale(1.05)",
+												transition: "0.3s",
+											},
+										}}
 									>
 										Login
 									</Button>

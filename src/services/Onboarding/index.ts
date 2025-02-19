@@ -1,6 +1,5 @@
 "use server";
 
-import { cookies } from "next/headers";
 import fetchInterceptor from "../fetchInterceptor";
 
 export const getUserList = async (search: string) => {

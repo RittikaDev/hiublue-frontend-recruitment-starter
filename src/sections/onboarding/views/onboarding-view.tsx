@@ -23,8 +23,10 @@ import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import { createOffer, getUserList } from "@/services/Onboarding";
+import { onBoardingSchema } from "./onBoardingValidation";
+import { useState } from "react";
 
 const PLAN_TYPES = [
 	{ name: "Pay As You Go", value: "pay_as_you_go" },
@@ -38,23 +40,7 @@ const ADDITIONS = [
 	{ name: "Negotiable", value: "negotiable" },
 ] as const;
 
-// Define form schema using Zod
-const formSchema = z.object({
-	plan_type: z.enum(["pay_as_you_go", "monthly", "yearly"]),
-	additions: z
-		.array(z.enum(["refundable", "on_demand", "negotiable"]))
-		.optional(),
-	user_id: z.number().min(1, { message: "User is required" }),
-	expired: z
-		.custom<Dayjs>((val) => dayjs.isDayjs(val), {
-			message: "Invalid date",
-		})
-		.transform((val) => val.format("YYYY-MM-DD")),
-	price: z.number().min(1, { message: "Price is required" }),
-});
-
-// TypeScript type based on schema
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = z.infer<typeof onBoardingSchema>;
 
 const OnboardingOffer = () => {
 	const {
@@ -64,7 +50,7 @@ const OnboardingOffer = () => {
 		watch,
 		formState: { errors },
 	} = useForm<FormValues>({
-		resolver: zodResolver(formSchema),
+		resolver: zodResolver(onBoardingSchema),
 		defaultValues: {
 			plan_type: "monthly",
 			additions: [],
@@ -75,8 +61,8 @@ const OnboardingOffer = () => {
 		},
 	});
 
-	const [users, setUsers] = React.useState<{ id: string; name: string }[]>([]);
-	const [loadingUsers, setLoadingUsers] = React.useState(false);
+	const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
+	const [loadingUsers, setLoadingUsers] = useState(false);
 
 	// Fetch users dynamically based on search input
 	const handleUserSearch = async (query: string) => {
@@ -97,7 +83,6 @@ const OnboardingOffer = () => {
 
 	// Handle form submission
 	const onSubmit = async (data: FormValues) => {
-		// console.log("Form Data Submitted:", data);
 		const resposne = await createOffer(data);
 		console.log(resposne.message);
 	};

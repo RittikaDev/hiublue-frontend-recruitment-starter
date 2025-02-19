@@ -28,7 +28,13 @@ import {
 	getDashboardStatResponse,
 	getDashboardSummary,
 } from "@/services/Dashboard";
-import { DayOfWeek, IDashboardStatResponse, IOffer, IOfferList } from "@/types";
+import {
+	DayOfWeek,
+	IDashboardStatResponse,
+	IDashboardSummary,
+	IOffer,
+	IOfferList,
+} from "@/types";
 import { Edit, MoreVert } from "@mui/icons-material";
 import KeyboardDoubleArrowUpRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowUpRounded";
 import KeyboardDoubleArrowDownRoundedIcon from "@mui/icons-material/KeyboardDoubleArrowDownRounded";
@@ -39,12 +45,12 @@ const ApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 export default function DashboardView() {
 	const [data, setData] = useState<IDashboardStatResponse | null>(null);
 
-	const [search, setSearch] = useState("");
-	const [filter, setFilter] = useState("this-week");
-	const [typeFilter, setTypeFilter] = useState("all");
+	const [search, setSearch] = useState<string>("");
+	const [filter, setFilter] = useState<string>("this-week");
+	const [typeFilter, setTypeFilter] = useState<string>("all");
 
-	const [page, setPage] = useState(1);
-	const [rowsPerPage, setRowsPerPage] = useState(10);
+	const [page, setPage] = useState<number>(1);
+	const [rowsPerPage, setRowsPerPage] = useState<number>(10);
 
 	const handleChangePage = (
 		event: React.MouseEvent<HTMLButtonElement> | null,
@@ -57,18 +63,15 @@ export default function DashboardView() {
 		event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
 	) => {
 		setRowsPerPage(parseInt(event.target.value, 10));
-		setPage(0); // Reset page when rows per page changes
+		setPage(0);
 	};
 
-	// const startRow = page * rowsPerPage + 1;
-	// const endRow = Math.min((page + 1) * rowsPerPage, data.length);
-
-	const [summary, setSummary] = useState(null);
-	const [loading, setLoading] = useState(true);
+	const [summary, setSummary] = useState<IDashboardSummary | null>(null);
+	const [loading, setLoading] = useState<Boolean>(true);
 
 	const [offerList, setOfferList] = useState<IOfferList | null>(null);
 
-	const [tabIndex, setTabIndex] = useState(0);
+	const [tabIndex, setTabIndex] = useState<number>(0);
 
 	const [error, setError] = useState<string | null>(null);
 	// const rowsPerPage = 5;
@@ -86,7 +89,7 @@ export default function DashboardView() {
 
 				setData(statsData);
 				setSummary(summaryData);
-				// console.log(offersData);
+				console.log(offersData);
 				setOfferList(offersData);
 			} catch (err: any) {
 				setError("Failed to fetch data");
@@ -112,7 +115,7 @@ export default function DashboardView() {
 		mobile: data.website_visits[day as DayOfWeek].mobile,
 	}));
 
-	// Inside DashboardView function
+	// INSIDE DASHBOARDVIEW FUNCTION
 	const calculatePercentageChange = (current: number, previous: number) => {
 		const difference = current - previous;
 		const percentageChange = previous
@@ -127,8 +130,8 @@ export default function DashboardView() {
 		return { percentageChange, arrow, isIncrease };
 	};
 
-	// Helper function to map stats data
-	const getStatsData = (summary: any) => {
+	// HELPER FUNCTION TO MAP STATS DATA
+	const getStatsData = (summary: IDashboardSummary) => {
 		const stats = [
 			{ label: "Total Active Users", key: "active_users" },
 			{ label: "Total Clicks", key: "clicks" },
@@ -136,8 +139,10 @@ export default function DashboardView() {
 		];
 
 		return stats.map((stat, index) => {
-			const current = summary?.current[stat.key];
-			const previous = summary?.previous[stat.key];
+			const current =
+				summary?.current[stat.key as keyof typeof summary.current];
+			const previous =
+				summary?.previous[stat.key as keyof typeof summary.previous];
 
 			const { percentageChange, arrow, isIncrease } = calculatePercentageChange(
 				current ?? 0,
@@ -156,48 +161,46 @@ export default function DashboardView() {
 	};
 
 	const filteredOffers = offerList?.data
-		.filter((offer) => typeFilter === "all" || offer.status === typeFilter)
+		.filter((offer) => typeFilter === "all" || offer.type === typeFilter)
 		.filter(
 			(offer) =>
-				// Check if the search term matches any field in the offer object (case-insensitive)
+				// CHECK IF THE SEARCH TERM MATCHES ANY FIELD IN THE OFFER OBJECT (CASE-INSENSITIVE)
 				offer.user_name.toLowerCase().includes(search.toLowerCase()) ||
 				offer.phone.toLowerCase().includes(search.toLowerCase()) ||
 				offer.company.toLowerCase().includes(search.toLowerCase()) ||
 				offer.jobTitle.toLowerCase().includes(search.toLowerCase()) ||
 				offer.type.toLowerCase().includes(search.toLowerCase()) ||
 				offer.status.toLowerCase().includes(search.toLowerCase())
-		)
-		.filter((offer) => typeFilter === "all" || offer.type === typeFilter);
+		);
 
 	// console.log(filteredOffers);
 
 	return (
-		<div className="p-6 bg-gray-100">
-			<div className="flex justify-between">
-				<h1 className="text-4xl font-bold mb-6">Dashboard</h1>
+		<div className="p-4 md:p-6 bg-gray-100">
+			{/* HEADER */}
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+				<h1 className="text-xl md:text-4xl font-bold">Dashboard</h1>
 				<Select
 					value={filter}
 					onChange={(e) => setFilter(e.target.value)}
 					size="small"
-					style={{ width: "150px", height: "40px" }}
+					className="w-full md:w-[150px] h-[40px] mt-2 md:mt-0"
 				>
 					<MenuItem value="this-week">This Week</MenuItem>
 					<MenuItem value="prev-week">Previous Week</MenuItem>
 				</Select>
 			</div>
-			{/* Top Stats */}
-			<div className="grid grid-cols-3 gap-4 mb-6">
-				{getStatsData(summary).map((stat, index) => {
-					return (
+
+			{/* TOP STATS */}
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+				{summary &&
+					getStatsData(summary).map((stat, index) => (
 						<Card key={index} className="p-4 shadow-lg">
 							<CardContent>
 								<Typography className="text-gray-800 font-semibold text-sm">
 									{stat.label}
 								</Typography>
-								<Typography
-									variant="h5"
-									className="text-gray-800 font-bold text-3xl"
-								>
+								<Typography className="text-gray-800 font-bold text-3xl">
 									{stat.current
 										? `${(stat.current / 1000).toFixed(1)}k`
 										: "N/A"}
@@ -218,47 +221,30 @@ export default function DashboardView() {
 								</div>
 							</CardContent>
 						</Card>
-					);
-				})}
+					))}
 			</div>
 
-			{/* Charts */}
-			<div className="grid grid-cols-2 gap-4 mb-6">
+			{/* CHARTS */}
+			<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 				<Card className="p-4 shadow-lg relative">
 					<Typography className="text-gray-500">Website Visits</Typography>
-
-					{/* Top-right labels with circles */}
-					<div className="flex flex-row-reverse gap-6 mb-8">
-						{/* Mobile label with circle */}
+					<div className="flex flex-wrap justify-end gap-4 mb-4">
 						<div className="flex items-center space-x-1">
-							<div
-								className="w-3 h-3 rounded-full"
-								style={{ backgroundColor: "#FFAB00" }}
-							></div>
+							<div className="w-3 h-3 rounded-full bg-[#FFAB00]"></div>
 							<Typography className="text-sm">Mobile</Typography>
 						</div>
-						{/* Desktop label with circle */}
 						<div className="flex items-center space-x-1">
-							<div
-								className="w-3 h-3 rounded-full"
-								style={{ backgroundColor: "#007867" }}
-							></div>
+							<div className="w-3 h-3 rounded-full bg-[#007867]"></div>
 							<Typography className="text-sm">Desktop</Typography>
 						</div>
 					</div>
 
-					{/* ApexChart for the website visits */}
 					<ApexChart
 						options={{
 							chart: { type: "bar" },
 							xaxis: { categories: visits.map((v) => v.day) },
-							colors: ["#007867", "#FFAB00"], // Set the custom colors here
-							plotOptions: {
-								bar: {
-									borderRadius: 6,
-									horizontal: false,
-								},
-							},
+							colors: ["#007867", "#FFAB00"],
+							plotOptions: { bar: { borderRadius: 6, horizontal: false } },
 						}}
 						series={[
 							{ name: "Desktop", data: visits.map((v) => v.desktop) },
@@ -283,31 +269,30 @@ export default function DashboardView() {
 					/>
 				</Card>
 			</div>
-
-			{/* Table */}
 			{/* Tabs for Current Offers and Accepted Offers */}
 			<Tabs
 				value={tabIndex}
 				onChange={(event, newValue) => setTabIndex(newValue)}
 				className="mb-4"
 			>
-				<Tab label="All" />
-				<Tab label="Accepted" />
+				<Tab label="Current Offers" />
+				<Tab label="Accepted Offers" />
 			</Tabs>
-
-			{/* Table Filters */}
-			<div className="flex justify-between items-center mb-4">
+			{/* TABLE FILTERS */}
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
 				<TextField
 					label="Search"
 					variant="outlined"
 					size="small"
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
+					className="w-full md:w-auto"
 				/>
 				<Select
 					value={typeFilter}
 					onChange={(e) => setTypeFilter(e.target.value)}
 					size="small"
+					className="w-full md:w-auto"
 				>
 					<MenuItem value="all">All</MenuItem>
 					<MenuItem value="monthly">Monthly</MenuItem>
@@ -316,68 +301,70 @@ export default function DashboardView() {
 				</Select>
 			</div>
 
-			{/* Table */}
-			<TableContainer component={Paper} className="shadow-lg">
-				<Table>
-					<TableHead className="bg-gray-100">
-						<TableRow>
-							<TableCell>Name</TableCell>
-							<TableCell>Phone</TableCell>
-							<TableCell>Company</TableCell>
-							<TableCell>Job Title</TableCell>
-							<TableCell>Type</TableCell>
-							<TableCell>Status</TableCell>
-							<TableCell></TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{(tabIndex === 0
-							? filteredOffers
-							: filteredOffers?.filter((offer) => offer.status === "accepted")
-						)?.map((offer: IOffer) => (
-							<TableRow key={offer.id}>
-								<TableCell>{offer.user_name}</TableCell>
-								<TableCell>{offer.phone}</TableCell>
-								<TableCell>{offer.company}</TableCell>
-								<TableCell>{offer.jobTitle}</TableCell>
-								<TableCell>{offer.type}</TableCell>
-								<TableCell>
-									<Chip
-										color={
-											offer.status === "accepted"
-												? "success"
-												: offer.status === "rejected"
-													? "warning"
-													: "error"
-										}
-										label={
-											offer.status === "accepted"
-												? "Accepted"
-												: offer.status === "rejected"
-													? "Pending"
-													: "Rejected"
-										}
-									/>
-								</TableCell>
-								<TableCell>
-									<IconButton size="small">
-										<Edit />
-									</IconButton>
-									<IconButton size="small">
-										<MoreVert />
-									</IconButton>
-								</TableCell>
+			{/* TABLE */}
+			<div className="overflow-x-auto shadow-lg">
+				<TableContainer component={Paper}>
+					<Table>
+						<TableHead className="bg-gray-100">
+							<TableRow>
+								<TableCell>Name</TableCell>
+								<TableCell>Phone</TableCell>
+								<TableCell>Company</TableCell>
+								<TableCell>Job Title</TableCell>
+								<TableCell>Type</TableCell>
+								<TableCell>Status</TableCell>
+								<TableCell></TableCell>
 							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+						</TableHead>
+						<TableBody>
+							{(tabIndex === 0
+								? filteredOffers
+								: filteredOffers?.filter((offer) => offer.status === "accepted")
+							)?.map((offer: IOffer) => (
+								<TableRow key={offer.id}>
+									<TableCell>{offer.user_name}</TableCell>
+									<TableCell>{offer.phone}</TableCell>
+									<TableCell>{offer.company}</TableCell>
+									<TableCell>{offer.jobTitle}</TableCell>
+									<TableCell>{offer.type}</TableCell>
+									<TableCell>
+										<Chip
+											color={
+												offer.status === "accepted"
+													? "success"
+													: offer.status === "rejected"
+														? "warning"
+														: "error"
+											}
+											label={
+												offer.status === "accepted"
+													? "Accepted"
+													: offer.status === "rejected"
+														? "Pending"
+														: "Rejected"
+											}
+										/>
+									</TableCell>
+									<TableCell>
+										<IconButton size="small">
+											<Edit />
+										</IconButton>
+										<IconButton size="small">
+											<MoreVert />
+										</IconButton>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</TableContainer>
+			</div>
 
-			{/* Pagination */}
-			<div className="flex justify-end mt-4">
+			{/* PAGINATION */}
+			<div className="flex justify-between md:justify-end mt-4">
 				<TablePagination
 					component="div"
-					count={filteredOffers?.length ?? 0} // The total number of filtered offers
+					count={filteredOffers?.length ?? 0}
 					page={page - 1}
 					onPageChange={handleChangePage}
 					rowsPerPage={rowsPerPage}

@@ -1,23 +1,7 @@
 "use server";
 
-import { cookies } from "next/headers";
+import fetchInterceptor from "../fetchInterceptor";
 
 export const getOfferList = async () => {
-	try {
-		const res = await fetch("https://dummy-1.hiublue.com/api/offers", {
-			method: "GET",
-			headers: {
-				Authorization: `Bearer ${cookies().get("token")?.value},`,
-				"Content-Type": "application/json",
-			},
-		});
-
-		const data = await res.json();
-		if (!data) throw new Error("Failed to fetch data");
-
-		return data;
-	} catch (error: any) {
-		console.error(error);
-		return Error(error);
-	}
+	return fetchInterceptor(`${process.env.NEXT_PUBLIC_BASE_API}/offers`);
 };

@@ -31,3 +31,14 @@ export interface IDashboardStatResponse {
 	website_visits: IWebsiteVisits;
 	offers_sent: IOffersSent;
 }
+
+interface AnalyticsData {
+	active_users: number;
+	clicks: number;
+	appearance: number;
+}
+
+export interface IDashboardSummary {
+	current: AnalyticsData;
+	previous: AnalyticsData;
+}
