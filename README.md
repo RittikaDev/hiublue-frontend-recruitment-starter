@@ -2,6 +2,10 @@
 
 This project is an admin dashboard application built with React, Material UI, TypeScript, and integrates real-time data from APIs. The app features authentication, data visualization using charts, and provides an interface for sending onboarding offers to users. It is fully responsive and follows a modular, reusable code structure with TypeScript typings.
 
+## Live Preview
+
+[HiuBlue Dashboard](https://hiublu-dashboard.vercel.app/)
+
 ## Installation & Setup
 
 #### To set up the project locally, follow these steps:

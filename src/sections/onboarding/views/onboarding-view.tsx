@@ -58,14 +58,14 @@ const OnboardingOffer = () => {
 			user_id: 0,
 			// expired: new Date(),
 			expired: "",
-			price: 0,
+			price: 0.0,
 		},
 	});
 
 	const [users, setUsers] = useState<{ id: string; name: string }[]>([]);
 	const [loadingUsers, setLoadingUsers] = useState(false);
 
-	// Fetch users dynamically based on search input
+	// FETCH USERS DYNAMICALLY BASED ON SEARCH INPUT
 	const handleUserSearch = async (query: string) => {
 		if (!query) return;
 		setLoadingUsers(true);
@@ -82,7 +82,7 @@ const OnboardingOffer = () => {
 		}
 	};
 
-	// Handle form submission
+	// HANDLE FORM SUBMISSION
 	const onSubmit = async (data: FormValues) => {
 		try {
 			const resposne = await createOffer(data);
@@ -108,7 +108,7 @@ const OnboardingOffer = () => {
 				/>
 
 				<form onSubmit={handleSubmit(onSubmit)}>
-					{/* Plan Type Selection */}
+					{/* Plan TYPE SELECTION */}
 					<FormControl component="fieldset" sx={{ mb: 2 }}>
 						<p className="mt-5 font-semibold">Plan Type</p>
 						<Controller
@@ -125,28 +125,11 @@ const OnboardingOffer = () => {
 										/>
 									))}
 								</RadioGroup>
-								// <RadioGroup row {...field}>
-								// 	<FormControlLabel
-								// 		value="pay-as-you-go"
-								// 		control={<Radio color="success" />}
-								// 		label="Pay As You Go"
-								// 	/>
-								// 	<FormControlLabel
-								// 		value="monthly"
-								// 		control={<Radio color="success" />}
-								// 		label="Monthly"
-								// 	/>
-								// 	<FormControlLabel
-								// 		value="yearly"
-								// 		control={<Radio color="success" />}
-								// 		label="Yearly"
-								// 	/>
-								// </RadioGroup>
 							)}
 						/>
 					</FormControl>
 
-					{/* Additions (Checkboxes) */}
+					{/* ADDITIONS (CHECKBOXES) */}
 					<Box sx={{ mb: 2 }}>
 						<p className="mt-5 font-semibold">Additions</p>
 						<Controller
@@ -154,87 +137,34 @@ const OnboardingOffer = () => {
 							control={control}
 							render={({ field }) => (
 								<>
-									<>
-										{ADDITIONS.map((addition) => (
-											<FormControlLabel
-												key={addition.value}
-												control={
-													<Checkbox
-														color="success"
-														checked={field.value?.includes(addition.value)}
-														onChange={(e) =>
-															setValue(
-																"additions",
-																e.target.checked
-																	? [...(field.value || []), addition.value]
-																	: field.value?.filter(
-																			(v) => v !== addition.value
-																		)
-															)
-														}
-													/>
-												}
-												label={addition.name}
-											/>
-										))}
-									</>
-									{/* <FormControlLabel
-										control={
-											<Checkbox
-												color="success"
-												checked={field.value?.includes("refundable")}
-												onChange={(e) =>
-													setValue(
-														"additions",
-														e.target.checked
-															? [...(field.value || []), "refundable"]
-															: field.value?.filter((v) => v !== "refundable")
-													)
-												}
-											/>
-										}
-										label="Refundable"
-									/>
-									<FormControlLabel
-										control={
-											<Checkbox
-												color="success"
-												checked={field.value?.includes("on_demand")}
-												onChange={(e) =>
-													setValue(
-														"additions",
-														e.target.checked
-															? [...(field.value || []), "on_demand"]
-															: field.value?.filter((v) => v !== "on_demand")
-													)
-												}
-											/>
-										}
-										label="On Demand"
-									/>
-									<FormControlLabel
-										control={
-											<Checkbox
-												color="success"
-												checked={field.value?.includes("negotiable")}
-												onChange={(e) =>
-													setValue(
-														"additions",
-														e.target.checked
-															? [...(field.value || []), "negotiable"]
-															: field.value?.filter((v) => v !== "negotiable")
-													)
-												}
-											/>
-										}
-										label="Negotiable"
-									/> */}
+									{ADDITIONS.map((addition) => (
+										<FormControlLabel
+											key={addition.value}
+											control={
+												<Checkbox
+													color="success"
+													checked={field.value?.includes(addition.value)}
+													onChange={(e) =>
+														setValue(
+															"additions",
+															e.target.checked
+																? [...(field.value || []), addition.value]
+																: field.value?.filter(
+																		(v) => v !== addition.value
+																	)
+														)
+													}
+												/>
+											}
+											label={addition.name}
+										/>
+									))}
 								</>
 							)}
 						/>
 					</Box>
 
-					{/* User Selection (Autocomplete) */}
+					{/* USER SELECTION (AUTOCOMPLETE) */}
 					<p className="mt-5 mb-2 font-semibold">User</p>
 					<Controller
 						name="user_id"
@@ -261,7 +191,7 @@ const OnboardingOffer = () => {
 						)}
 					/>
 
-					{/* Expiration Date */}
+					{/* EXPIRATION DATE */}
 					<p className="mt-5 mb-2 font-semibold">Expired</p>
 					<Controller
 						name="expired"
@@ -287,7 +217,7 @@ const OnboardingOffer = () => {
 						)}
 					/>
 
-					{/* Price Input */}
+					{/* PRICE INPUT */}
 					<p className="mt-5 mb-2 font-semibold">Price</p>
 					<Controller
 						name="price"
@@ -301,12 +231,14 @@ const OnboardingOffer = () => {
 								error={!!errors.price}
 								helperText={errors.price?.message}
 								sx={{ mb: 2, width: "100%" }}
-								onChange={(e) => field.onChange(Number(e.target.value))}
+								onChange={(e) =>
+									field.onChange(parseFloat(e.target.value) || 0)
+								}
 							/>
 						)}
 					/>
 
-					{/* Submit Button */}
+					{/* SUBMIT BUTTON */}
 					<Button
 						type="submit"
 						variant="contained"
@@ -318,8 +250,8 @@ const OnboardingOffer = () => {
 							"&:hover": { bgcolor: "#333" },
 							display: "flex",
 							justifyContent: "flex-end",
-							ml: "auto", // Moves button to the right
-							mt: 2, // Adds space above
+							ml: "auto",
+							mt: 2,
 						}}
 					>
 						Send Offer

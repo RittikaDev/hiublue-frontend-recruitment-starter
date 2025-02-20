@@ -9,6 +9,14 @@ import Providers from "@/providers/Providers";
 import { Toaster } from "sonner";
 
 import "./globals.css";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "HiuBlue Dashboard",
+	icons: {
+		icon: "/favicon.ico",
+	},
+};
 
 export default function RootLayout(props: { children: React.ReactNode }) {
 	return (
