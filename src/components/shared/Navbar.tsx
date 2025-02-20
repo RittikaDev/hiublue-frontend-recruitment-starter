@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import {
 	AppBar,
 	Toolbar,
-	Typography,
 	Button,
 	IconButton,
 	Menu,
@@ -12,9 +11,9 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-// import { getCurrentUser, logout } from "@/services/AuthService";
 import Link from "next/link";
 import { logout } from "@/services/AuthService";
+import Image from "next/image";
 
 const Navbar = () => {
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -65,12 +64,7 @@ const Navbar = () => {
 			>
 				<div className="max-w-7xl mx-auto w-full">
 					<Toolbar className="flex justify-between items-center w-full">
-						<Typography
-							variant="h6"
-							sx={{ fontWeight: "bold", color: "white" }}
-						>
-							Logo
-						</Typography>
+						<Image src="/logo.png" width={35} height={35} alt="HiuBlue logo" />
 
 						{/* Desktop Menu */}
 						<div className="justify-center flex-grow hidden lg:flex">

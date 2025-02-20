@@ -6,23 +6,26 @@ import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import ThemeProvider from "@/theme/index";
 import Providers from "@/providers/Providers";
 
+import { Toaster } from "sonner";
+
 import "./globals.css";
 
 export default function RootLayout(props: { children: React.ReactNode }) {
-  return (
-    <Providers>
-      <html lang="en" suppressHydrationWarning>
-        <body>
-          <InitColorSchemeScript attribute="class" />
-          <AppRouterCacheProvider options={{ enableCssLayer: true }}>
-            <ThemeProvider>
-              {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-              <CssBaseline />
-              {props.children}
-            </ThemeProvider>
-          </AppRouterCacheProvider>
-        </body>
-      </html>
-    </Providers>
-  );
+	return (
+		<Providers>
+			<html lang="en" suppressHydrationWarning>
+				<body>
+					<InitColorSchemeScript attribute="class" />
+					<AppRouterCacheProvider options={{ enableCssLayer: true }}>
+						<ThemeProvider>
+							{/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+							<CssBaseline />
+							<Toaster richColors />
+							{props.children}
+						</ThemeProvider>
+					</AppRouterCacheProvider>
+				</body>
+			</html>
+		</Providers>
+	);
 }

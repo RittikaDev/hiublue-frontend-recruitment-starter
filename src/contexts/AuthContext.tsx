@@ -12,9 +12,17 @@ type User = {
 type AuthContextType = {
 	user: User | null;
 	token: string | null;
-	login: (email: string, password: string) => Promise<void>;
+	login: (
+		email: string,
+		password: string
+	) => Promise<IAuthResponse | undefined>;
 	logout: () => void;
 };
+
+export interface IAuthResponse {
+	user: User;
+	token: string;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -38,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			setToken(data.token);
 			localStorage.setItem("user", JSON.stringify(data.user));
 			localStorage.setItem("token", data.token);
+			return data;
 		} catch (error) {
 			console.error(error);
 		}

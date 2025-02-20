@@ -23,6 +23,22 @@ const NAVIGATION: Navigation = [
 	},
 ];
 
+const demoTheme = createTheme({
+	cssVariables: {
+		colorSchemeSelector: "data-toolpad-color-scheme",
+	},
+	colorSchemes: { light: true, dark: true },
+	breakpoints: {
+		values: {
+			xs: 0,
+			sm: 600,
+			md: 600,
+			lg: 1200,
+			xl: 1536,
+		},
+	},
+});
+
 interface DemoProps {
 	/**
 	 * Injected by the documentation to work in an iframe.
@@ -38,23 +54,11 @@ export default function DashboardLayoutBranding(props: DemoProps) {
 	// Getting the current pathname and router from next/navigation
 	const pathname = usePathname();
 	const router = useRouter();
-	const userData = localStorage.getItem("user");
-
-	let userEmail = null;
-	if (userData) {
-		try {
-			const parsedUser = JSON.parse(userData);
-			userEmail = parsedUser.email;
-		} catch (error) {
-			console.error("Error parsing user data:", error);
-		}
-	}
-
-	// console.log(userEmail);
-
+	const [userEmail, setUserEmail] = React.useState<string | null>(null);
+	const [isClient, setIsClient] = React.useState(false);
 	const [session, setSession] = React.useState({
 		user: {
-			email: userEmail,
+			email: userEmail || "",
 			image: "./profile.jpg",
 		},
 	});
@@ -64,7 +68,7 @@ export default function DashboardLayoutBranding(props: DemoProps) {
 			signIn: () => {
 				setSession({
 					user: {
-						email: userEmail,
+						email: userEmail || "",
 						image: "./profile.jpg",
 					},
 				});
@@ -83,6 +87,28 @@ export default function DashboardLayoutBranding(props: DemoProps) {
 		};
 	}, []);
 
+	// Ensure we access localStorage only after the component is mounted on the client side
+	React.useEffect(() => {
+		setIsClient(true); // Indicate that the component is now on the client
+
+		const userData = localStorage.getItem("user");
+		if (userData) {
+			try {
+				const parsedUser = JSON.parse(userData);
+				setUserEmail(parsedUser.email);
+			} catch (error) {
+				console.error("Error parsing user data:", error);
+			}
+		}
+	}, []); // Empty dependency array ensures this only runs once after component mounts
+
+	// Avoid rendering until we're sure we're on the client
+	if (!isClient) {
+		return null; // Return nothing until client-side rendering is ready
+	}
+
+	// console.log(userEmail);
+
 	const demoWindow = window !== undefined ? window() : undefined;
 
 	return (
@@ -98,6 +124,7 @@ export default function DashboardLayoutBranding(props: DemoProps) {
 				searchParams: new URLSearchParams(),
 				navigate: (url: string | URL) => router.push(url.toString()),
 			}}
+			theme={demoTheme}
 			window={demoWindow}
 			session={session}
 			authentication={authentication}

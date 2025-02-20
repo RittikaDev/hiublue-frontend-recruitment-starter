@@ -16,11 +16,13 @@ import MuiCard from "@mui/material/Card";
 import { styled } from "@mui/material/styles";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/AuthContext";
+import { IAuthResponse, useAuth } from "@/contexts/AuthContext";
 
 import { loginSchema } from "../loginValidation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { FormHelperText } from "@mui/material";
 
 const Card = styled(MuiCard)(({ theme }) => ({
 	display: "flex",
@@ -70,6 +72,7 @@ export default function SignIn() {
 
 	const form = useForm({
 		resolver: zodResolver(loginSchema),
+		mode: "onChange",
 	});
 
 	const {
@@ -78,14 +81,25 @@ export default function SignIn() {
 		formState: { errors, isSubmitting },
 	} = form;
 
+	// console.log(errors);
+
 	const onSubmit = async (data: { email: string; password: string }) => {
 		try {
-			await login(data.email, data.password);
-			router.push("/");
+			const res: IAuthResponse | undefined = await login(
+				data.email,
+				data.password
+			);
+			if (res?.token) {
+				toast.success("Logged in successfully");
+				router.push("/");
+			} else toast.error("Login failed - please check your credentials");
 		} catch (err) {
 			console.error("Login failed:", err);
+			toast.error("Login failed - please check your credentials");
 		}
 	};
+
+	const isButtonDisabled = !form.formState.isValid || isSubmitting;
 
 	return (
 		<>
@@ -101,7 +115,6 @@ export default function SignIn() {
 					</Typography>
 					<Box
 						component="form"
-						// onSubmit={handleSubmit}
 						onSubmit={handleSubmit(onSubmit)}
 						noValidate
 						sx={{
@@ -149,11 +162,13 @@ export default function SignIn() {
 							control={<Checkbox value="remember" color="primary" />}
 							label="Remember me"
 						/>
+						{/* disabled={isButtonDisabled} */}
 						<Button
 							type="submit"
 							fullWidth
 							variant="contained"
-							onClick={() => {}}
+							sx={{ mt: 2 }}
+							disabled={isButtonDisabled}
 						>
 							{isSubmitting ? "Signing in..." : "Sign in"}
 						</Button>
