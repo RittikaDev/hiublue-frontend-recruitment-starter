@@ -1,6 +1,5 @@
 import DashboardLayoutBranding from "@/components/modules/Sidebar";
 import "../globals.css";
-import { DemoPageContent } from "@/components/modules/SidebarInset";
 
 export default function DashboardLayout({
 	children,
